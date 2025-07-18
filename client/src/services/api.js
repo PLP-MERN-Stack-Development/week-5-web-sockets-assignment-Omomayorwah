@@ -4,6 +4,7 @@ import axios from 'axios';
 import { io } from "socket.io-client";
 
 // Create axios instance with base URL
+const BackendBaseUrl = "http://localhost:5000";
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: {
@@ -132,28 +133,13 @@ export const authService = {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   },
-
 };
 
-// Socket.io client setup
+// Socket.IO client setup
+export const getRooms = ()=> api.get("/rooms");
+export const createRoom = (name) => api.post("/rooms", { name });
 
-const BackendBaseUrl = "http://localhost:5000";
-const APIBaseUrl = "http://localhost:5000/api";
-
-const API = axios.create({
-    baseURL: APIBaseUrl,
-});
-
-// Export the API instance
-
-export const registerUser = ( username )=> API.post("/auth/register", { username });
-
-export const getRooms = ()=> API.get("/rooms");
-export const createRoom = (name) => API.post("/rooms", { name });
-
-export const getMessages = (roomId) => API.get(`/messages/${roomId}`);
-
-
+export const getMessages = (roomId) => api.get(`/messages/${roomId}`);
 export const socket = io(BackendBaseUrl, { autoConnect: false });
 
 export default api; 

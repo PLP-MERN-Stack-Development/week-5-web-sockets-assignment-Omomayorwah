@@ -29,19 +29,21 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-zinc-900 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-blue-200 dark:bg-zinc-900 px-4">
       <Card className="w-full max-w-md shadow-xl animate-fade">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">Sign Up</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
+            className="mb-3"
             type="text"
             placeholder="Username"
             value={username}
             onChange={e => setUsername(e.target.value)}
           />
           <Input
+            className="mb-3"
             type="email"
             placeholder="Email"
             value={email}
@@ -55,7 +57,7 @@ export default function Signup() {
           />
         </CardContent>
         <CardFooter>
-          <Button onClick={handleSignup} disabled={loading} className="w-full">
+          <Button onClick={handleSignup} disabled={loading} className="w-full bg-blue-500 hover:bg-blue-600">
             {loading ? "Signing up..." : "Sign Up"}
           </Button>
         </CardFooter>

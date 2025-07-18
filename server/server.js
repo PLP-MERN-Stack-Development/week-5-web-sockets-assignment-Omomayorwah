@@ -1,132 +1,76 @@
-// server.js - Main server file for Socket.io chat application
+require("dotenv").config();
+const express = require("express");
+import { static as expressStatic } from 'express';
+const http = require("http");
+const cors = require("cors");
+const connectDB = require("./config/db");
+const { Server } = require("socket.io");
+import { join } from 'path';
 
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const path = require('path');
+// Import routes
+import postRoutes from './routes/posts';
+import categoryRoutes from './routes/categories';
+import authRoutes from './routes/auth';
 
 // Load environment variables
-dotenv.config();
+config();
 
-// Initialize Express app
 const app = express();
 const server = http.createServer(app);
+
 const io = new Server(server, {
-  cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
+    cors: { origin: "*" }
 });
+
+
+// Socket.IO
+require('./socket')(io);
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(json());
+app.use(urlencoded({ extended: true }));
+app.use('/uploads', expressStatic(join(__dirname, 'uploads')));
 
-// Store connected users and messages
-const users = {};
-const messages = [];
-const typingUsers = {};
-
-// Socket.io connection handler
-io.on('connection', (socket) => {
-  console.log(`User connected: ${socket.id}`);
-
-  // Handle user joining
-  socket.on('user_join', (username) => {
-    users[socket.id] = { username, id: socket.id };
-    io.emit('user_list', Object.values(users));
-    io.emit('user_joined', { username, id: socket.id });
-    console.log(`${username} joined the chat`);
+// Log requests in development mode
+if (process.env.NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
   });
+}
 
-  // Handle chat messages
-  socket.on('send_message', (messageData) => {
-    const message = {
-      ...messageData,
-      id: Date.now(),
-      sender: users[socket.id]?.username || 'Anonymous',
-      senderId: socket.id,
-      timestamp: new Date().toISOString(),
-    };
-    
-    messages.push(message);
-    
-    // Limit stored messages to prevent memory issues
-    if (messages.length > 100) {
-      messages.shift();
-    }
-    
-    io.emit('receive_message', message);
-  });
-
-  // Handle typing indicator
-  socket.on('typing', (isTyping) => {
-    if (users[socket.id]) {
-      const username = users[socket.id].username;
-      
-      if (isTyping) {
-        typingUsers[socket.id] = username;
-      } else {
-        delete typingUsers[socket.id];
-      }
-      
-      io.emit('typing_users', Object.values(typingUsers));
-    }
-  });
-
-  // Handle private messages
-  socket.on('private_message', ({ to, message }) => {
-    const messageData = {
-      id: Date.now(),
-      sender: users[socket.id]?.username || 'Anonymous',
-      senderId: socket.id,
-      message,
-      timestamp: new Date().toISOString(),
-      isPrivate: true,
-    };
-    
-    socket.to(to).emit('private_message', messageData);
-    socket.emit('private_message', messageData);
-  });
-
-  // Handle disconnection
-  socket.on('disconnect', () => {
-    if (users[socket.id]) {
-      const { username } = users[socket.id];
-      io.emit('user_left', { username, id: socket.id });
-      console.log(`${username} left the chat`);
-    }
-    
-    delete users[socket.id];
-    delete typingUsers[socket.id];
-    
-    io.emit('user_list', Object.values(users));
-    io.emit('typing_users', Object.values(typingUsers));
-  });
-});
-
-// API routes
-app.get('/api/messages', (req, res) => {
-  res.json(messages);
-});
-
-app.get('/api/users', (req, res) => {
-  res.json(Object.values(users));
-});
+// Routes
+app.use('/api/posts', postRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/auth', authRoutes);
+app.use("/api/rooms", require("./routes/roomRoutes"));
+app.use("/api/messages", require("./routes/messageRoutes"));
 
 // Root route
 app.get('/', (req, res) => {
-  res.send('Socket.io Chat Server is running');
+  res.send('MERN Blog API is running');
 });
 
-// Start server
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.statusCode || 500).json({
+    success: false,
+    error: err.message || 'Server Error',
+  });
+});
+
+// DB & Start
+connectDB();
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+server.listen(PORT, ()=> console.log(`Server is running on http://localhost:${PORT}`))
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Promise Rejection:', err);
+  // Close server & exit process
+  process.exit(1);
 });
 
-module.exports = { app, server, io }; 
+export default app; 

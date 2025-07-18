@@ -38,6 +38,7 @@ export default function Login() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
+            className="mb-3"
             type="email"
             placeholder="Email"
             value={email}
@@ -51,7 +52,7 @@ export default function Login() {
           />
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button onClick={handleLogin} disabled={loading} className="w-full">
+          <Button onClick={handleLogin} disabled={loading} className="w-full bg-blue-500 hover:bg-blue-600">
             {loading ? "Logging in..." : "Log In"}
           </Button>
         </CardFooter>

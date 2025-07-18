@@ -33,7 +33,7 @@ export default function Community({ user }){
 
     return(
         <div className="flex h-screen">
-            <aside className="w-1/4 bg-gray-800 text-white p-4">
+            <aside className="w-1/4 bg-blue-500 text-white p-4">
                 <h2 className="text-lg mb-2">Rooms</h2>
                 <ul>
                     {rooms.map((room) => {

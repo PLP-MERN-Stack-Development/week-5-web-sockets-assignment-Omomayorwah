@@ -5,8 +5,8 @@ import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import BlogCard from '@/components/ui/blogCard';
-import NavigationBar from "@/components/ui/navigationBar";
 import Footer from "@/components/ui/footer";
+import { Link } from "react-router-dom";
 
 function LandingPage() {
      const sample = [{
@@ -31,9 +31,7 @@ function LandingPage() {
 
  return (
   <div>
-    <div className='w-full'>
-     <NavigationBar />
-    </div>
+
     <Container fluid className="bg-blue-300 h-80 flex flex-col justify-center items-center">
        <h1 className='text-3xl font-bold text-gray-800 '>Welcome to MyBlog</h1>
         <p className='text-gray-700 mb-2'> Explore our unique categories</p>
@@ -43,10 +41,10 @@ function LandingPage() {
       </div>
       <div className="mt-7">
         <span className=" mr-5">
-          <Button  className="flex items-center gap-2 bg bg-blue-400 text-bold">Signup</Button>
+          <Link to={"/signup"}><Button  className="flex items-center gap-2 bg bg-blue-400 text-bold">Signup</Button></Link>
         </span>
         <span>
-          <Button  className="flex items-center gap-2 bg-blue-400">Login</Button>
+          <Link to={"/login"}><Button className="flex items-center gap-2 bg-blue-400">Login</Button></Link>
         </span>
       </div>
     </Container>
